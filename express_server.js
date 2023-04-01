@@ -1,3 +1,12 @@
+function generateRandomString() {
+  const alphanumericChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < 6; i++) {
+    result += alphanumericChars.charAt(Math.floor(Math.random() * alphanumericChars.length));
+  }
+  return result;
+}
+
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
@@ -32,24 +41,27 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+app.post("/urls", (req, res) => {
+  console.log(req.body); // Log the POST request body to the console
+  const randomShort = generateRandomString();
+  urlDatabase[randomShort] = {longURL: req.body.longURL}
+  res.redirect('http://localhost:8080/urls/' + String(randomShort));
+});
+
+app.get('/u/:shortURL', (req, res) => {
+  if (urlDatabase[req.params.shortURL]) {
+    longURL = urlDatabase[req.params.shortURL].longURL;
+    res.redirect(longURL);
+  }
+  else {
+    res.sendStatus(404);
+  }
+});
+
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL};
   res.render("urls_show", templateVars);
 });
-
-app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
-});
-
-function generateRandomString() {
-  const alphanumericChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  for (let i = 0; i < 6; i++) {
-    result += alphanumericChars.charAt(Math.floor(Math.random() * alphanumericChars.length));
-  }
-  return result;
-}
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
