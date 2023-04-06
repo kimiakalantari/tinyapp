@@ -67,6 +67,11 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+app.get("/register", (req, res) => {
+  const templateVars = { username: req.cookies["username"] };
+  res.render("register_index", templateVars);
+});
+
 app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id;
   delete urlDatabase[id];
