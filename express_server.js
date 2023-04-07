@@ -67,14 +67,22 @@ app.get("/urls", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
-  const randomShort = generateRandomString();
-  urlDatabase[randomShort] = {longURL: req.body.longURL}
-  res.redirect('http://localhost:8080/urls/' + String(randomShort));
+  if (!req.cookies["user_id"]) {
+    res.send("Please login or register first!")
+  } else {
+    const randomShort = generateRandomString();
+    urlDatabase[randomShort] = {longURL: req.body.longURL}
+    res.redirect('http://localhost:8080/urls/' + String(randomShort));
+  }
 });
 
 app.get("/urls/new", (req, res) => {
   const templateVars = { urls: urlDatabase, user_id: req.cookies["user_id"], user: users };
-  res.render("urls_new", templateVars);
+  if (!req.cookies["user_id"]) {
+    res.redirect("/login");
+  } else {
+    res.render("urls_new", templateVars);
+  }
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -104,6 +112,7 @@ app.get('/u/:shortURL', (req, res) => {
   }
   else {
     res.sendStatus(404);
+    res.send('Invalid Short URL')
   }
 });
 
