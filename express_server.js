@@ -90,7 +90,7 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
   if (!req.session.user_id) {
-    res.send("Please login or register first!");
+    res.status(401).send("Please login or register first!");
   } else {
     const randomShort = generateRandomString();
     urlDatabase[randomShort] = {longURL: req.body.longURL, userID: req.session.user_id};
@@ -109,9 +109,9 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   if (!(Object.keys(urlDatabase).includes(req.params.id))) {
-    res.send(404, "Invalid Short URL");
+    res.status(404).send("Invalid Short URL");
   } else if (!req.session.user_id || req.session.user_id !==  urlDatabase[req.params.id].userID) {
-    res.send(404, "You are not logged in or do not have permission to access short url page.");
+    res.status(404).send("You are not logged in or do not have permission to access short url page.");
   } else {
     const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, urlUserID: urlDatabase[req.params.id].userID, user: users[req.session.user_id]};
     res.render("urls_show", templateVars);
@@ -120,9 +120,9 @@ app.get("/urls/:id", (req, res) => {
 
 app.post("/urls/:id", (req, res) => {
   if (!(Object.keys(urlDatabase).includes(req.params.id))) {
-    res.send(404, "Invalid Short URL");
+    res.status(404, "Invalid Short URL");
   } else if (!req.session.user_id || req.session.user_id !==  urlDatabase[req.params.id].userID) {
-    res.send(404, "You are not logged in or do not have permission to access short url page.");
+    res.status(401).send("You are not logged in or do not have permission to access short url page.");
   } else {
     urlDatabase[req.params.id].longURL = req.body.longURL;
     res.redirect('/urls');
@@ -131,9 +131,9 @@ app.post("/urls/:id", (req, res) => {
 
 app.post("/urls/:id/delete", (req, res) => {
   if (!(Object.keys(urlDatabase).includes(req.params.id))) {
-    res.send(404, "Invalid Short URL");
+    res.status(404).send("Invalid Short URL");
   } else if (!req.session.user_id || req.session.user_id !==  urlDatabase[req.params.id].userID) {
-    res.send(404, "You are not logged in or do not have permission to access short url page.");
+    res.status(401).send("You are not logged in or do not have permission to access short url page.");
   } else {
     const shortURL = req.params.id;
     delete urlDatabase[shortURL];
@@ -148,8 +148,7 @@ app.get('/u/:shortURL', (req, res) => {
     const fullURL = urlDatabase[req.params.shortURL].longURL;
     res.redirect(fullURL);
   } else {
-    res.sendStatus(404);
-    res.send('Invalid Short URL');
+    res.status(404).send('Invalid Short URL');
   }
 });
 
@@ -164,7 +163,7 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const emailDuplicate = emailDupeChecker(req.body.email);
   if (emailDuplicate) {
-    res.send(400, "An account already exists for this email address");
+    res.status(400).send("An account already exists for this email address");
   } else {
     if (req.body.email && req.body.password) {
       let userID = generateRandomString();
@@ -176,7 +175,7 @@ app.post("/register", (req, res) => {
       req.session.user_id = userID;
       res.redirect("/urls");
     } else {
-      res.send(400, "Please include both a valid email and password");
+      res.status(400).send("Please include both a valid email and password");
     }
   }
 });
@@ -202,7 +201,7 @@ app.post("/login", (req, res) => {
   if (userEmail.length > 0 && userPass.length > 0) {
     res.redirect('/urls');
   } else {
-    res.send(403, "Invalid email or password");
+    res.status(404).send("Invalid email or password");
   }
 });
 
