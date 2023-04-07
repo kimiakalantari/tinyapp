@@ -14,7 +14,7 @@ app.use(cookieSession({
   name: 'session',
   keys: ['KIMIA'],
   maxAge: 24 * 60 * 60 * 1000,
-}))
+}));
 
 // FUNCTIONS AND OBJECTS
 
@@ -30,7 +30,7 @@ function generateRandomString() {
 function emailDupeChecker(emailCheck) {
   let emailExists = false;
   for (let x in users) {
-    if (users[x]['email'] == emailCheck.trim()) {
+    if (users[x]['email'] === emailCheck.trim()) {
       emailExists = true;
       break;
     }
