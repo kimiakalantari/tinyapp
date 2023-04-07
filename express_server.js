@@ -97,6 +97,11 @@ app.get("/register", (req, res) => {
   res.render("register_index", templateVars);
 });
 
+app.get("/login", (req, res) => {
+  const templateVars = { user_id: req.cookies["user_id"], user: users };
+  res.render("login_index", templateVars);
+});
+
 app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id;
   delete urlDatabase[id];
@@ -110,10 +115,10 @@ app.post("/urls/:id", (req, res) => {
   res.redirect('/urls');
 });
 
-app.post("/login", (req, res) => {
-  res.cookie("user_id", req.body.username);
-  res.redirect("/urls");
-});
+// app.post("/login", (req, res) => {
+//   res.cookie("user_id", req.body.username);
+//   res.redirect("/urls");
+// });
 
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
