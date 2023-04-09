@@ -18,36 +18,7 @@ app.use(cookieSession({
 
 // FUNCTIONS AND OBJECTS
 
-function generateRandomString() {
-  const alphanumericChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  for (let i = 0; i < 6; i++) {
-    result += alphanumericChars.charAt(Math.floor(Math.random() * alphanumericChars.length));
-  }
-  return result;
-}
-
-function emailDupeChecker(emailCheck) {
-  let emailExists = false;
-  for (let x in users) {
-    if (users[x]['email'] === emailCheck.trim()) {
-      emailExists = true;
-      break;
-    }
-  }
-  return emailExists;
-}
-
-// Returns an object of short URLs specific to the passed in userID
-const urlsForUser = function(id, urlDatabase) {
-  const userUrls = {};
-  for (const shortURL in urlDatabase) {
-    if (urlDatabase[shortURL].userID === id) {
-      userUrls[shortURL] = urlDatabase[shortURL];
-    }
-  }
-  return userUrls;
-};
+const { generateRandomString, emailDupeChecker, userIdFromEmail, urlsForUser } = require("./helpers");
 
 const urlDatabase = {
   "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userID: "wutang"},
@@ -161,7 +132,7 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const emailDuplicate = emailDupeChecker(req.body.email);
+  const emailDuplicate = emailDupeChecker(req.body.email, users);
   if (emailDuplicate) {
     res.status(400).send("An account already exists for this email address");
   } else {
@@ -187,21 +158,21 @@ app.get("/login", (req, res) => {
   res.render("login_index", templateVars);
 });
 
-app.post("/login", (req, res) => {
-  let userEmail = "";
-  let userPass = "";
 
-  for (let x in users) {
-    if (users[x]['email'] === req.body.email && bcrypt.compareSync(req.body.password, users[x]['password'])) {
-      userEmail = req.body.email;
-      userPass = req.body.password;
-      req.session.user_id = users[x]["id"];
-    }
-  }
-  if (userEmail.length > 0 && userPass.length > 0) {
-    res.redirect('/urls');
+app.post("/login", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if (emailDupeChecker(email)) {
+    res.status(403).send("There is no account associated with this email address");
   } else {
-    res.status(404).send("Invalid email or password");
+    const userID = userIdFromEmail(email, users);
+    if (!bcrypt.compareSync(password, users[userID].password)) {
+      res.status(403).send("The password you entered does not match the one associated with the provided email address");
+    } else {
+      req.session.user_id = userID;
+      res.redirect("/urls");
+    }
   }
 });
 
